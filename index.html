@@ -2,57 +2,50 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Mural Rádio Cotia</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-  
   <style>
-    body, html { margin: 0; padding: 0; background: transparent; font-family: sans-serif; overflow: hidden; }
+    body, html { margin: 0; padding: 0; background: transparent; font-family: sans-serif; overflow: hidden; height: 100%; }
     
     .header-container {
-      background: #001a33; 
-      color: #ffcc00; 
-      text-align: center; 
-      padding: 8px 0;
-      border-bottom: 3px solid #ffcc00;
+      background: #001a33; color: #ffcc00; text-align: center; 
+      padding: 6px 0; border-bottom: 2px solid #ffcc00;
     }
+    .title { font-weight: bold; font-size: 14px; text-transform: uppercase; margin: 0; }
+    .drag-info { font-size: 9px; color: #ffffff; margin-top: 1px; }
 
-    .title { font-weight: bold; font-size: 16px; text-transform: uppercase; margin: 0; }
-    .drag-info { font-size: 10px; color: #ffffff; margin-top: 2px; }
-
-    /* Ajustamos a altura aqui para não cortar embaixo */
-    .swiper { width: 100%; height: 410px; padding-top: 10px; }
+    /* Reduzi a altura total para 380px para garantir que caiba no SmallBio sem cortar */
+    .swiper { width: 100%; height: 380px; padding-top: 5px; }
     .swiper-slide { display: flex; justify-content: center; align-items: center; width: auto; }
 
     .card { 
       position: relative; 
-      width: 260px; /* Um pouco mais estreito para caber melhor em telas pequenas */
-      height: 360px; /* Altura controlada para não cortar */
+      width: 250px; 
+      height: 340px; 
       border-radius: 12px; 
       overflow: hidden; 
       background: #000; 
-      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
       border: 1px solid #333;
     }
 
-    /* Ajuste para imagem não cortar */
-    img { width: 100%; height: 100%; object-fit: contain; background: #000; }
-    
-    /* Ajuste para vídeo */
+    img { width: 100%; height: 100%; object-fit: contain; }
     video { width: 100%; height: 100%; object-fit: cover; }
 
+    /* Botão de Som Amigável */
+    .mute-btn {
+      position: absolute; top: 10px; left: 10px;
+      background: rgba(255, 204, 0, 0.9); color: #001a33;
+      border: none; padding: 5px 10px; border-radius: 20px;
+      font-size: 10px; font-weight: bold; cursor: pointer; z-index: 20;
+    }
+
     .btn-link { 
-      position: absolute; 
-      bottom: 10px; 
-      right: 10px; 
-      background: #ffcc00; 
-      color: #001a33; 
-      padding: 6px 12px; 
-      border-radius: 6px; 
-      font-size: 10px; 
-      font-weight: bold; 
-      text-decoration: none;
-      text-transform: uppercase;
+      position: absolute; bottom: 10px; right: 10px; 
+      background: #ffcc00; color: #001a33; 
+      padding: 6px 12px; border-radius: 6px; 
+      font-size: 10px; font-weight: bold; text-decoration: none;
       z-index: 10;
     }
   </style>
@@ -61,7 +54,7 @@
 
   <div class="header-container">
     <div class="title">Mural da Comunidade</div>
-    <div class="drag-info">&lt; Arraste e clique no vídeo para som &gt;</div>
+    <div class="drag-info">&lt; Arraste para os lados &gt;</div>
   </div>
 
   <div class="swiper">
@@ -69,9 +62,14 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-  
   <script>
     const urlPlanilha = "https://script.google.com/macros/s/AKfycbFU7ONeMsoBqXiRT0GwIwPocYtyH21kItIerNFtbhtigSMFv150JKEj5ok3OKaaFX6Qg/exec";
+
+    function toggleMute(btn, videoId) {
+      const v = document.getElementById(videoId);
+      v.muted = !v.muted;
+      btn.innerText = v.muted ? "ATIVAR SOM 🔊" : "MUDO 🔇";
+    }
 
     async function carregarMural() {
       try {
@@ -79,19 +77,22 @@
         const dados = await resposta.json();
         const container = document.getElementById("conteudo-mural");
 
-        if (!dados || dados.length === 0) {
-          container.innerHTML = '<p style="color:white; text-align:center; padding-top:50px;">Nenhum anúncio ativo.</p>';
-          return;
-        }
+        if (!dados || dados.length === 0) return;
 
-        container.innerHTML = dados.map(item => {
+        container.innerHTML = dados.map((item, index) => {
           const linkArquivo = item.arquivo || "";
           const ehVideo = linkArquivo.toLowerCase().includes('.mp4') || linkArquivo.toLowerCase().includes('.mov');
+          const videoId = "vid-" + index;
           
-          // Adicionamos 'controls' para a pessoa clicar no play/áudio
-          const midiaHtml = ehVideo 
-            ? `<video src="${linkArquivo}" controls playsinline></video>` 
-            : `<img src="${linkArquivo}" onerror="this.src='https://via.placeholder.com/260x360?text=Imagem+Indisponivel'">`;
+          let midiaHtml = "";
+          if (ehVideo) {
+            midiaHtml = `
+              <button class="mute-btn" onclick="toggleMute(this, '${videoId}')">ATIVAR SOM 🔊</button>
+              <video id="${videoId}" src="${linkArquivo}" autoplay muted loop playsinline></video>
+            `;
+          } else {
+            midiaHtml = `<img src="${linkArquivo}">`;
+          }
 
           return `
             <div class="swiper-slide">
@@ -103,16 +104,9 @@
         }).join('');
 
         new Swiper('.swiper', {
-          slidesPerView: 'auto',
-          centeredSlides: true,
-          spaceBetween: 20,
-          loop: dados.length > 1,
-          grabCursor: true
+          slidesPerView: 'auto', centeredSlides: true, spaceBetween: 15, loop: dados.length > 1
         });
-
-      } catch (erro) {
-        console.error(erro);
-      }
+      } catch (e) { console.error(e); }
     }
     carregarMural();
   </script>
