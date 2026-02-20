@@ -1,1 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <style>
+    corpo, html { margem: 0; preenchimento: 0; fundo: transparente; transbordamento: oculto; família da fonte: sans-serif; }
+    .header-container { background: #001a33; color: #ffcc00; text-align: center; padding: 12px 0; border-bottom: 3px solid #ffcc00; margin-bottom: 15px; }
+    .title { font-weight: bold; font-size: 18px; text-transform: uppercase; margin: 0; }
+    .swiper { largura: 100%; altura: 420px; }
+    .swiper-slide { display: flex; justify-content: center; align-items: center; width: auto; }
+    .card { position: relative; border-radius: 15px; overflow: hidden; background: #000; box-shadow: 0 8px 20px rgba(0,0,0,0.5); border: 1px solid #333; }
+    img, video { altura: 370px; largura: automática; exibição: bloco; ajuste do objeto: conter; }
+  </style>
+</head>
+<body>
+  <div class="header-container"><div class="title">Mural da Semana</div></div>
+  <div class="swiper"><div class="swiper-wrapper" id="track"></div></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  <script>
+    const urlScript = 'https://script.google.com/macros/s/AKfycbxGq4FPn7DkbnlEA3fHXlng5RvFkJSWmR04dq-WlSxAGMeSKfzYID1od30bzTBZ0ThxFA/exec';
+
+    função assíncrona carregarMural() {
+      tentar {
+        const resposta = await fetch(urlScript);
+        const dados = aguarda resposta.json();
+        const track = document.getElementById("track");
+        
+        if (!dados || dados.length === 0) return;
+
+        track.innerHTML = dados.map(item => {
+          const midiaUrl = item.arquivo || "";
+          const isVideo = /\.(mp4|webm|mov)$/i.test(midiaUrl);
+          const midiaHtml = isVideo
+            ? `<video src="${midiaUrl}" controls playsinline style="height:370px"></video>`
+            : `<img src="${midiaUrl}">`;
+
+          retornar `
+            <div class="swiper-slide">
+              <a href="${item.link || '#'}" target="_top" class="card">${midiaHtml}</a>
+            </div>`;
+        }).juntar('');
+
+        novo Swiper('.swiper', {
+          slidesPerView: 'auto',
+          espaçoEntre: 25,
+          slidescentrados: verdadeiro,
+          loop: dados.length > 1,
+          pegarCursor: verdadeiro
+        });
+      } catch (e) { console.error(e); }
+    }
+    carregadoMural();
+  </script>
+</body>
+</html>
