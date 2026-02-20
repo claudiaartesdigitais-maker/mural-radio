@@ -1,120 +1,57 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mural Rádio Cotia</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-  
   <style>
     body, html { margin: 0; padding: 0; background: transparent; font-family: sans-serif; overflow: hidden; }
-    
-    .header-container {
-      background: #001a33; 
-      color: #ffcc00; 
-      text-align: center; 
-      padding: 8px 0;
-      border-bottom: 3px solid #ffcc00;
-    }
-
-    .title { font-weight: bold; font-size: 16px; text-transform: uppercase; margin: 0; }
-    .drag-info { font-size: 10px; color: #ffffff; margin-top: 2px; }
-
-    /* Ajustamos a altura aqui para não cortar embaixo */
-    .swiper { width: 100%; height: 410px; padding-top: 10px; }
-    .swiper-slide { display: flex; justify-content: center; align-items: center; width: auto; }
-
-    .card { 
-      position: relative; 
-      width: 260px; /* Um pouco mais estreito para caber melhor em telas pequenas */
-      height: 360px; /* Altura controlada para não cortar */
-      border-radius: 12px; 
-      overflow: hidden; 
-      background: #000; 
-      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
-      border: 1px solid #333;
-    }
-
-    /* Ajuste para imagem não cortar */
-    img { width: 100%; height: 100%; object-fit: contain; background: #000; }
-    
-    /* Ajuste para vídeo */
-    video { width: 100%; height: 100%; object-fit: cover; }
-
-    .btn-link { 
-      position: absolute; 
-      bottom: 10px; 
-      right: 10px; 
-      background: #ffcc00; 
-      color: #001a33; 
-      padding: 6px 12px; 
-      border-radius: 6px; 
-      font-size: 10px; 
-      font-weight: bold; 
-      text-decoration: none;
-      text-transform: uppercase;
-      z-index: 10;
-    }
+    .header { background: #001a33; color: #ffcc00; text-align: center; padding: 10px; border-bottom: 3px solid #ffcc00; }
+    .title { font-weight: bold; font-size: 16px; text-transform: uppercase; }
+    /* Ajuste de altura para não cortar embaixo */
+    .swiper { width: 100%; height: 350px; margin-top: 10px; }
+    .swiper-slide { display: flex; justify-content: center; align-items: center; }
+    /* Ajuste do card */
+    .card { width: 280px; height: 330px; background: #000; border-radius: 15px; overflow: hidden; border: 1px solid #333; position: relative; }
+    /* Ajuste para a imagem NÃO cortar (contain) */
+    img, video { width: 100%; height: 100%; object-fit: contain; }
+    .btn-link { position: absolute; bottom: 15px; right: 15px; background: #ffcc00; color: #001a33; padding: 8px 12px; border-radius: 8px; font-weight: bold; text-decoration: none; font-size: 12px; }
   </style>
 </head>
 <body>
-
-  <div class="header-container">
-    <div class="title">Mural da Comunidade</div>
-    <div class="drag-info">&lt; Arraste e clique no vídeo para som &gt;</div>
-  </div>
-
-  <div class="swiper">
-    <div class="swiper-wrapper" id="conteudo-mural"></div>
-  </div>
+  <div class="header"><div class="title">Mural da Comunidade</div></div>
+  <div class="swiper"><div class="swiper-wrapper" id="track"></div></div>
 
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-  
   <script>
-    const urlPlanilha = "https://script.google.com/macros/s/AKfycbxdgXRUsVRZWk_IkQeTua6h3pdZ08P4nFTD6GHj_wHv3xKhJpuqCE1E1rEG26XRM1p4fA/exec";
+    const linkDaPlanilha = "https://script.google.com/macros/s/AKfycbxdgXRUsVRZWk_IkQeTua6h3pdZ08P4nFTD6GHj_wHv3xKhJpuqCE1E1rEG26XRM1p4fA/exec";
 
-    async function carregarMural() {
+    async function carregar() {
       try {
-        const resposta = await fetch(urlPlanilha);
-        const dados = await resposta.json();
-        const container = document.getElementById("conteudo-mural");
-
-        if (!dados || dados.length === 0) {
-          container.innerHTML = '<p style="color:white; text-align:center; padding-top:50px;">Nenhum anúncio ativo.</p>';
-          return;
-        }
+        const res = await fetch(linkDaPlanilha);
+        const dados = await res.json();
+        const container = document.getElementById("track");
 
         container.innerHTML = dados.map(item => {
-          const linkArquivo = item.arquivo || "";
-          const ehVideo = linkArquivo.toLowerCase().includes('.mp4') || linkArquivo.toLowerCase().includes('.mov');
+          const isVideo = item.arquivo.includes('.mp4');
+          // Adicionei 'controls' para você conseguir dar play no som
+          const midia = isVideo 
+            ? `<video src="${item.arquivo}" autoplay muted loop playsinline controls></video>` 
+            : `<img src="${item.arquivo}">`;
           
-          // Adicionamos 'controls' para a pessoa clicar no play/áudio
-          const midiaHtml = ehVideo 
-            ? `<video src="${linkArquivo}" controls playsinline></video>` 
-            : `<img src="${linkArquivo}" onerror="this.src='https://via.placeholder.com/260x360?text=Imagem+Indisponivel'">`;
-
           return `
             <div class="swiper-slide">
               <div class="card">
-                ${midiaHtml}
-                ${item.link ? `<a href="${item.link}" target="_blank" class="btn-link">Ver Mais</a>` : ''}
+                ${midia}
+                ${item.link ? `<a href="${item.link}" target="_blank" class="btn-link">VER MAIS</a>` : ''}
               </div>
             </div>`;
         }).join('');
 
-        new Swiper('.swiper', {
-          slidesPerView: 'auto',
-          centeredSlides: true,
-          spaceBetween: 20,
-          loop: dados.length > 1,
-          grabCursor: true
-        });
-
-      } catch (erro) {
-        console.error(erro);
-      }
+        new Swiper('.swiper', { slidesPerView: 'auto', centeredSlides: true, spaceBetween: 20, loop: true });
+      } catch (e) { console.error("Erro ao carregar:", e); }
     }
-    carregarMural();
+    carregar();
   </script>
 </body>
 </html>
