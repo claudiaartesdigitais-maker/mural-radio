@@ -7,42 +7,40 @@
   <style>
     body, html { margin: 0; padding: 0; background: transparent; font-family: sans-serif; overflow: hidden; }
     
-    /* Cabeçalho */
-    .header { background: #001a33; color: #ffcc00; text-align: center; padding: 10px; border-bottom: 3px solid #ffcc00; }
-    .title { font-weight: bold; font-size: 16px; text-transform: uppercase; }
+    .header { background: #001a33; color: #ffcc00; text-align: center; padding: 8px; border-bottom: 2px solid #ffcc00; }
+    .title { font-weight: bold; font-size: 14px; text-transform: uppercase; }
     
-    /* Aumentei a altura total para 520px para caber a arte vertical */
-    .swiper { width: 100%; height: 520px; margin-top: 5px; }
+    /* Reduzi a altura total para 450px para caber no limite do SmallBio */
+    .swiper { width: 100%; height: 450px; margin-top: 5px; }
     .swiper-slide { display: flex; justify-content: center; align-items: center; width: auto; }
     
-    /* Card agora é bem mais alto (vertical) */
+    /* Card um pouco mais estreito (260px) para caber melhor na vertical */
     .card { 
-      width: 300px; 
-      height: 480px; /* Altura aumentada de 380 para 480 */
+      width: 260px; 
+      height: 420px; 
       background: #000; 
-      border-radius: 15px; 
+      border-radius: 12px; 
       overflow: hidden; 
       border: 1px solid #333; 
       position: relative; 
-      box-shadow: 0 6px 15px rgba(0,0,0,0.6);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     }
     
-    /* Mantive o 'contain' para garantir que nada, absolutamente nada, seja cortado */
+    /* 'Contain' garante que a arte apareça inteira sem cortes */
     img, video { width: 100%; height: 100%; object-fit: contain; background: #000; }
     
     .btn-link { 
       position: absolute; 
-      bottom: 20px; 
-      right: 15px; 
+      bottom: 15px; 
+      right: 10px; 
       background: #ffcc00; 
       color: #001a33; 
-      padding: 10px 20px; 
-      border-radius: 8px; 
+      padding: 8px 15px; 
+      border-radius: 6px; 
       font-weight: bold; 
       text-decoration: none; 
-      font-size: 13px; 
+      font-size: 11px; 
       z-index: 10;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.8);
     }
   </style>
 </head>
@@ -80,11 +78,10 @@
         new Swiper('.swiper', { 
           slidesPerView: 'auto', 
           centeredSlides: true, 
-          spaceBetween: 25, 
-          loop: dados.length > 1,
-          grabCursor: true
+          spaceBetween: 20, 
+          loop: dados.length > 1
         });
-      } catch (e) { console.error("Erro:", e); }
+      } catch (e) { console.error(e); }
     }
     carregar();
   </script>
