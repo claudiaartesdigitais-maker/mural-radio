@@ -6,18 +6,17 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   <style>
     body, html { margin: 0; padding: 0; background: transparent; font-family: sans-serif; overflow: hidden; }
+    .header { background: #001a33; color: #ffcc00; text-align: center; padding: 10px; border-bottom: 3px solid #ffcc00; }
+    .title { font-weight: bold; font-size: 16px; text-transform: uppercase; }
     
-    .header { background: #001a33; color: #ffcc00; text-align: center; padding: 8px; border-bottom: 2px solid #ffcc00; }
-    .title { font-weight: bold; font-size: 14px; text-transform: uppercase; }
-    
-    /* Reduzi a altura total para 450px para caber no limite do SmallBio */
-    .swiper { width: 100%; height: 450px; margin-top: 5px; }
+    /* Altura ajustada para o SmallBio */
+    .swiper { width: 100%; height: 385px; margin-top: 5px; }
     .swiper-slide { display: flex; justify-content: center; align-items: center; width: auto; }
     
-    /* Card um pouco mais estreito (260px) para caber melhor na vertical */
+    /* Card com largura boa para preencher a tela */
     .card { 
-      width: 260px; 
-      height: 420px; 
+      width: 290px; 
+      height: 350px; 
       background: #000; 
       border-radius: 12px; 
       overflow: hidden; 
@@ -26,21 +25,21 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     }
     
-    /* 'Contain' garante que a arte apareça inteira sem cortes */
-    img, video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+    img, video { width: 100%; height: 100%; object-fit: cover; }
     
     .btn-link { 
       position: absolute; 
-      bottom: 15px; 
-      right: 10px; 
+      bottom: 12px; 
+      right: 12px; 
       background: #ffcc00; 
       color: #001a33; 
-      padding: 8px 15px; 
-      border-radius: 6px; 
+      padding: 10px 16px; /* Botão um pouco maior para facilitar o clique */
+      border-radius: 8px; 
       font-weight: bold; 
       text-decoration: none; 
-      font-size: 11px; 
-      z-index: 10;
+      font-size: 12px; 
+      z-index: 10; 
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
     }
   </style>
 </head>
@@ -61,7 +60,7 @@
         if (!dados || dados.length === 0) return;
 
         container.innerHTML = dados.map(item => {
-          const isVideo = item.arquivo.toLowerCase().includes('.mp4');
+          const isVideo = item.arquivo.includes('.mp4');
           const midia = isVideo 
             ? `<video src="${item.arquivo}" autoplay muted loop playsinline controls></video>` 
             : `<img src="${item.arquivo}" loading="lazy">`;
@@ -78,10 +77,12 @@
         new Swiper('.swiper', { 
           slidesPerView: 'auto', 
           centeredSlides: true, 
-          spaceBetween: 20, 
-          loop: dados.length > 1
+          spaceBetween: 25, // Espaço de segurança para não clicar na arte vizinha
+          loop: dados.length > 1,
+          resistanceRatio: 0,
+          touchAngle: 45
         });
-      } catch (e) { console.error(e); }
+      } catch (e) { console.error("Erro:", e); }
     }
     carregar();
   </script>
