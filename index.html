@@ -3,93 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mural Rádio Cotia</title>
+  <title>Mural Rádio</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   <style>
     body, html { margin: 0; padding: 0; background: transparent; font-family: sans-serif; overflow: hidden; }
-    
-    .header-container {
-      background: #001a33; color: #ffcc00; text-align: center; 
-      padding: 5px 0; border-bottom: 2px solid #ffcc00;
-    }
-    .title { font-weight: bold; font-size: 14px; text-transform: uppercase; margin: 0; }
-
-    /* Altura bem segura para não sumir nada */
-    .swiper { width: 100%; height: 350px; margin-top: 5px; }
+    .header { background: #001a33; color: #ffcc00; text-align: center; padding: 5px; border-bottom: 2px solid #ffcc00; }
+    .swiper { width: 100%; height: 360px; margin-top: 10px; }
     .swiper-slide { display: flex; justify-content: center; align-items: center; width: auto; }
-
-    .card { 
-      position: relative; 
-      width: 240px; 
-      height: 320px; 
-      border-radius: 10px; 
-      overflow: hidden; 
-      background: #000; 
-      border: 1px solid #333;
-    }
-
+    .card { width: 240px; height: 320px; border-radius: 10px; overflow: hidden; background: #000; position: relative; border: 1px solid #333; }
     img, video { width: 100%; height: 100%; object-fit: contain; }
-
-    .btn-link { 
-      position: absolute; bottom: 8px; right: 8px; 
-      background: #ffcc00; color: #001a33; 
-      padding: 5px 10px; border-radius: 5px; 
-      font-size: 10px; font-weight: bold; text-decoration: none;
-      z-index: 10;
-    }
+    .btn { position: absolute; bottom: 10px; right: 10px; background: #ffcc00; color: #001a33; padding: 5px 10px; border-radius: 5px; font-size: 10px; font-weight: bold; text-decoration: none; z-index: 10; }
   </style>
 </head>
 <body>
-
-  <div class="header-container">
-    <div class="title">Mural da Comunidade</div>
-  </div>
-
-  <div class="swiper">
-    <div class="swiper-wrapper" id="conteudo-mural"></div>
-  </div>
+  <div class="header"><b style="font-size:14px;">MURAL DA COMUNIDADE</b></div>
+  <div class="swiper"><div class="swiper-wrapper" id="lista"></div></div>
 
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   <script>
-    const urlPlanilha = "https://script.google.com/macros/s/AKfycbFU7ONeMsoBqXiRT0GwIwPocYtyH21kItIerNFtbhtigSMFv150JKEj5ok3OKaaFX6Qg/exec";
+    const url = "https://script.google.com/macros/s/AKfycbFU7ONeMsoBqXiRT0GwIwPocYtyH21kItIerNFtbhtigSMFv150JKEj5ok3OKaaFX6Qg/exec";
 
-    async function carregarMural() {
-      try {
-        const resposta = await fetch(urlPlanilha);
-        const dados = await resposta.json();
-        const container = document.getElementById("conteudo-mural");
+    fetch(url)
+      .then(res => res.json())
+      .then(dados => {
+        const lista = document.getElementById("lista");
+        if (!dados || dados.length === 0) return;
 
-        if (!dados || dados.length === 0) {
-            container.innerHTML = '<p style="color:white;text-align:center">Sem anúncios</p>';
-            return;
-        }
-
-        container.innerHTML = dados.map((item) => {
-          const linkArquivo = item.arquivo || "";
-          const ehVideo = linkArquivo.toLowerCase().includes('.mp4') || linkArquivo.toLowerCase().includes('.mov');
+        lista.innerHTML = dados.map(item => {
+          const ehVideo = item.arquivo.toLowerCase().includes('.mp4');
+          const midia = ehVideo 
+            ? `<video src="${item.arquivo}" controls playsinline></video>` 
+            : `<img src="${item.arquivo}">`;
           
-          // Vídeo com controles nativos (mais seguro para não bugar)
-          const midiaHtml = ehVideo 
-            ? `<video src="${linkArquivo}" controls playsinline style="width:100%; height:100%;"></video>` 
-            : `<img src="${linkArquivo}">`;
-
-          return `
-            <div class="swiper-slide">
-              <div class="card">
-                ${midiaHtml}
-                ${item.link ? `<a href="${item.link}" target="_blank" class="btn-link">Ver Mais</a>` : ''}
-              </div>
-            </div>`;
+          return `<div class="swiper-slide"><div class="card">${midia}${item.link ? `<a href="${item.link}" target="_blank" class="btn">VER MAIS</a>` : ''}</div></div>`;
         }).join('');
 
-        new Swiper('.swiper', {
-          slidesPerView: 'auto', centeredSlides: true, spaceBetween: 15, loop: dados.length > 1
-        });
-      } catch (e) { 
-        document.getElementById("conteudo-mural").innerHTML = '<p style="color:white">Erro ao carregar</p>';
-      }
-    }
-    carregarMural();
+        new Swiper('.swiper', { slidesPerView: 'auto', centeredSlides: true, spaceBetween: 15, loop: dados.length > 1 });
+      })
+      .catch(e => console.log(e));
   </script>
 </body>
 </html>
