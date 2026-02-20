@@ -5,65 +5,14 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   <style>
     body, html { margin: 0; padding: 0; background: transparent; overflow: hidden; font-family: Arial, sans-serif; }
-    
-    .header { 
-      background: #001a33; 
-      color: #ffcc00; 
-      text-align: center; 
-      padding: 10px; 
-      font-weight: bold; 
-      font-size: 18px; 
-      border-bottom: 2px solid #ffcc00;
-      margin-bottom: 10px;
-    }
-
+    .header { background: #001a33; color: #ffcc00; text-align: center; padding: 10px; font-weight: bold; font-size: 18px; border-bottom: 2px solid #ffcc00; margin-bottom: 10px; }
     .swiper { width: 100%; height: 380px; }
-
-    .swiper-slide {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: auto;
-    }
-
-    .card {
-      position: relative;
-      display: block;
-      text-decoration: none;
-      -webkit-tap-highlight-color: transparent;
-      cursor: pointer;
-    }
-
-    /* Imagem e Vídeo com o mesmo tamanho e estilo do seu original */
-    img, video {
-      height: 340px; 
-      width: auto;
-      border-radius: 12px;
-      box-shadow: 0 6px 15px rgba(0,0,0,0.6);
-      display: block;
-      transition: transform 0.2s;
-    }
-
-    video { background: #000; }
-
-    .card:active img, .card:active video {
-      transform: scale(0.96);
-    }
-
-    .link-indicator {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      background: rgba(255, 204, 0, 0.95);
-      color: #001a33;
-      padding: 10px 16px; 
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: bold;
-      text-transform: uppercase;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-      pointer-events: none;
-    }
+    .swiper-slide { display: flex; justify-content: center; align-items: center; width: auto; }
+    .card { position: relative; display: block; text-decoration: none; -webkit-tap-highlight-color: transparent; cursor: pointer; }
+    img, video { height: 340px; width: auto; border-radius: 12px; box-shadow: 0 6px 15px rgba(0,0,0,0.6); display: block; transition: transform 0.2s; }
+    video { background: #000; min-width: 200px; }
+    .card:active img, .card:active video { transform: scale(0.96); }
+    .link-indicator { position: absolute; bottom: 20px; right: 20px; background: rgba(255, 204, 0, 0.95); color: #001a33; padding: 10px 16px; border-radius: 8px; font-size: 12px; font-weight: bold; text-transform: uppercase; box-shadow: 0 2px 10px rgba(0,0,0,0.5); pointer-events: none; }
   </style>
 </head>
 <body>
@@ -71,74 +20,68 @@
   <div class="header">MURAL DA SEMANA</div>
 
   <div class="swiper">
-    <div class="swiper-wrapper" id="track">
-      </div>
+    <div class="swiper-wrapper" id="track"></div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   <script>
-    // Link do seu novo Script
-    const urlScript = 'https://script.google.com/macros/s/AKfycbyo6M5sCIYioCmzmfLPUvfiN-97ZGwUFJEoR17HyO0GD351z1oSj-_459MNVnXDHWrKhQ/exec';
+    // Link do seu último Script enviado
+    const urlScript = 'https://script.google.com/macros/s/AKfycbzYHEb_8pgZw3QP_2AIme8U0rPQFnYZtVytscO2fhA67KK50XTInPKwZyMtX0E3uJ7NAQ/exec';
 
     async function carregarMural() {
       try {
         const resposta = await fetch(urlScript);
         const dados = await resposta.json();
-        renderizar(dados);
+        const track = document.getElementById("track");
+        
+        if (!dados || dados.length === 0) { 
+          track.innerHTML = "<p style='color:#fff; text-align:center; width:100%;'>Nenhuma novidade.</p>"; 
+          return; 
+        }
+
+        let htmlFinal = dados.map(item => {
+          // Garante que pegamos o link da mídia, não importa se o nome na planilha é 'foto', 'Foto' ou 'Arquivo'
+          const urlMidia = item.foto || item.Foto || item.Arquivo || "";
+          const urlLink = item.link || item.Link || "";
+          
+          let conteudoMidia = '';
+          const eVideo = urlMidia.toLowerCase().includes('.mp4');
+
+          if (eVideo) {
+            // Player de vídeo com controles e som habilitado
+            conteudoMidia = `<video controls playsinline preload="metadata">
+                               <source src="${urlMidia}" type="video/mp4">
+                             </video>`;
+          } else {
+            conteudoMidia = `<img src="${urlMidia}" alt="Imagem">`;
+          }
+
+          let botaoLink = (urlLink.trim() !== "") ? `<div class="link-indicator">🔗 Abrir Link</div>` : "";
+          
+          if (urlLink.trim() !== "") {
+            return `<div class="swiper-slide"><a href="${urlLink}" target="_top" class="card">${conteudoMidia}${botaoLink}</a></div>`;
+          } else {
+            return `<div class="swiper-slide"><div class="card">${conteudoMidia}</div></div>`;
+          }
+        }).join('');
+
+        track.innerHTML = htmlFinal;
+
+        new Swiper('.swiper', {
+          slidesPerView: 'auto',
+          spaceBetween: 25,
+          centeredSlides: true,
+          loop: dados.length > 1,
+          grabCursor: true,
+          autoplay: { delay: 5000, disableOnInteraction: true },
+        });
+
       } catch (e) {
-        console.error("Erro ao carregar dados:", e);
+        console.error("Erro técnico:", e);
+        document.getElementById("track").innerHTML = "<p style='color:white;'>Erro ao carregar dados.</p>";
       }
     }
 
-    function renderizar(dados) {
-      const track = document.getElementById("track");
-      if (!dados || dados.length === 0) { 
-        track.innerHTML = "<p style='color:#fff; text-align:center; width:100%;'>Nenhuma novidade.</p>"; 
-        return; 
-      }
-      
-      let htmlFotos = dados.map(item => {
-        let content = '';
-        
-        // Verifica se o link no campo 'foto' é um vídeo MP4
-        const eVideo = item.foto && item.foto.toLowerCase().includes('.mp4');
-        
-        if (eVideo) {
-          content = `<video controls playsinline>
-                       <source src="${item.foto}" type="video/mp4">
-                     </video>`;
-        } else {
-          content = `<img src="${item.foto}" alt="${item.titulo}">`;
-        }
-
-        if (item.link && item.link.trim() !== "") {
-          content += `<div class="link-indicator">🔗 Abrir Link</div>`;
-          return `<div class="swiper-slide"><a href="${item.link}" target="_top" class="card">${content}</a></div>`;
-        }
-        return `<div class="swiper-slide"><div class="card">${content}</div></div>`;
-      }).join('');
-
-      track.innerHTML = htmlFotos;
-
-      const swiper = new Swiper('.swiper', {
-        slidesPerView: 'auto',
-        spaceBetween: 25,
-        centeredSlides: true,
-        loop: true,
-        grabCursor: true,
-        threshold: 5,
-        autoplay: {
-          delay: 4000,
-          disableOnInteraction: true,
-        },
-      });
-
-      document.querySelector('.swiper').addEventListener('touchstart', function() {
-        swiper.autoplay.stop();
-      });
-    }
-
-    // Chama a função para buscar os dados do seu script
     carregarMural();
   </script>
 </body>
