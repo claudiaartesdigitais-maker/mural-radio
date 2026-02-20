@@ -1,1 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mural da Semana - Rádio e TV Nova Cotia</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #001220; /* Azul bem escuro */
+            color: white;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
 
+        .header {
+            margin-bottom: 30px;
+        }
+
+        .mural-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .video-card {
+            background: #002642;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            transition: transform 0.3s;
+        }
+
+        .video-card:hover {
+            transform: translateY(-5px);
+        }
+
+        video {
+            width: 100%;
+            border-radius: 10px;
+            outline: none;
+        }
+
+        h1 { color: #ffffff; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        p { color: #ccc; }
+        .instrucao { font-size: 0.9em; color: #00d4ff; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Mural da Semana</h1>
+        <p>Rádio e TV Nova Cotia - Conectando a Região</p>
+    </div>
+
+    <div class="mural-container">
+
+        <div class="video-card">
+            <video controls>
+                <source src="URL_DO_SEU_VIDEO_AQUI.mp4" type="video/mp4">
+                Seu navegador não suporta vídeos.
+            </video>
+            <div class="instrucao">🔊 Clique para ouvir</div>
+        </div>
+
+        </div>
+
+</body>
+</html>
