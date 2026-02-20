@@ -6,61 +6,13 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   <style>
     body, html { margin: 0; padding: 0; background: #001220; overflow: hidden; font-family: Arial, sans-serif; }
-    
-    .header { 
-      background: #001a33; 
-      color: #ffcc00; 
-      text-align: center; 
-      padding: 10px; 
-      font-weight: bold; 
-      font-size: 18px; 
-      border-bottom: 2px solid #ffcc00;
-      margin-bottom: 10px;
-    }
-
+    .header { background: #001a33; color: #ffcc00; text-align: center; padding: 10px; font-weight: bold; font-size: 18px; border-bottom: 2px solid #ffcc00; margin-bottom: 10px; }
     .swiper { width: 100%; height: 380px; }
-
-    .swiper-slide {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: auto;
-    }
-
-    .card {
-      position: relative;
-      display: block;
-      text-decoration: none;
-      -webkit-tap-highlight-color: transparent;
-      cursor: pointer;
-    }
-
-    img, video {
-      height: 340px; 
-      width: auto;
-      border-radius: 12px;
-      box-shadow: 0 6px 15px rgba(0,0,0,0.6);
-      display: block;
-      transition: transform 0.2s;
-    }
-
-    video { background: #000; min-width: 200px; }
-
-    .card:active img, .card:active video { transform: scale(0.96); }
-
-    .link-indicator {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      background: rgba(255, 204, 0, 0.95);
-      color: #001a33;
-      padding: 8px 12px; 
-      border-radius: 8px;
-      font-size: 11px;
-      font-weight: bold;
-      text-transform: uppercase;
-      pointer-events: none;
-    }
+    .swiper-slide { display: flex; justify-content: center; align-items: center; width: auto; }
+    .card { position: relative; display: block; text-decoration: none; -webkit-tap-highlight-color: transparent; cursor: pointer; }
+    img, video { height: 340px; width: auto; border-radius: 12px; box-shadow: 0 6px 15px rgba(0,0,0,0.6); display: block; }
+    video { background: #000; min-width: 250px; }
+    .link-indicator { position: absolute; bottom: 20px; right: 20px; background: rgba(255, 204, 0, 0.95); color: #001a33; padding: 8px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
   </style>
 </head>
 <body>
@@ -68,29 +20,32 @@
   <div class="header">MURAL DA SEMANA</div>
 
   <div class="swiper">
-    <div class="swiper-wrapper" id="track"></div>
+    <div class="swiper-wrapper" id="track">
+       <p style="color:white; text-align:center; width:100%; margin-top:50px;">Carregando mural...</p>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   <script>
-    // Link do Script que você enviou agora:
+    // ESTE É O SEU LINK ATUALIZADO DO SCRIPT
     const urlScript = 'https://script.google.com/macros/s/AKfycbysy1A5r5Qr-kxIqPfNLabVKA6ojJHSYcn6ZnZUR6LwxwPMnmaQGAO7VZzAKkarIP_J3A/exec';
 
     async function carregarMural() {
       try {
+        // Mudança principal: Usamos 'fetch' para não depender do Google Drive
         const resposta = await fetch(urlScript);
         const dados = await resposta.json();
         const track = document.getElementById("track");
+        track.innerHTML = ''; 
         
         if (!dados || dados.length === 0) { 
-          track.innerHTML = "<p style='color:#fff; padding:20px;'>Nenhuma novidade no momento.</p>"; 
+          track.innerHTML = "<p style='color:#fff; padding:20px;'>Nenhuma novidade.</p>"; 
           return; 
         }
         
-        const htmlFotos = dados.map(item => {
+        const htmlFinal = dados.map(item => {
           let conteudoMidia = '';
           const urlMidia = item.foto || "";
-          // Verifica se o link contém .mp4 (independente de maiúsculas ou minúsculas)
           const eVideo = urlMidia.toLowerCase().includes('.mp4');
 
           if (eVideo) {
@@ -98,10 +53,10 @@
                                <source src="${urlMidia}" type="video/mp4">
                              </video>`;
           } else {
-            conteudoMidia = `<img src="${urlMidia}" alt="Mídia Mural">`;
+            conteudoMidia = `<img src="${urlMidia}" alt="Mídia">`;
           }
 
-          const temLink = item.link && item.link.toString().trim().length > 5;
+          const temLink = item.link && item.link.toString().length > 5;
           const indicator = temLink ? `<div class="link-indicator">🔗 Abrir Link</div>` : "";
           
           if (temLink) {
@@ -110,7 +65,7 @@
           return `<div class="swiper-slide"><div class="card">${conteudoMidia}</div></div>`;
         }).join('');
 
-        track.innerHTML = htmlFotos;
+        track.innerHTML = htmlFinal;
 
         new Swiper('.swiper', {
           slidesPerView: 'auto',
@@ -118,18 +73,16 @@
           centeredSlides: true,
           loop: dados.length > 1,
           grabCursor: true,
-          autoplay: {
-            delay: 5000,
-            disableOnInteraction: true,
-          }
+          autoplay: { delay: 5000, disableOnInteraction: true }
         });
 
       } catch (erro) {
-        console.error("Erro ao carregar:", erro);
-        document.getElementById("track").innerHTML = "<p style='color:white;'>Erro ao carregar dados.</p>";
+        console.error("Erro:", erro);
+        document.getElementById("track").innerHTML = "<p style='color:white;'>Erro de conexão com a planilha.</p>";
       }
     }
 
+    // Chama a função direto, sem usar google.script.run
     carregarMural();
   </script>
 </body>
