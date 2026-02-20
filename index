@@ -60,7 +60,7 @@
 
         <div class="video-card">
             <video controls>
-                <source src="URL_DO_SEU_VIDEO_AQUI.mp4" type="video/mp4">
+                <source src="https://claudiaartesdigitais-maker.github.io/mural-radio/">
                 Seu navegador não suporta vídeos.
             </video>
             <div class="instrucao">🔊 Clique para ouvir</div>
