@@ -1,100 +1,131 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html>
 <head>
+  <base target="_top">
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   <style>
-    body, html { margin: 0; padding: 0; background: #001220; overflow: hidden; font-family: Arial, sans-serif; }
+    body, html { margin: 0; padding: 0; background: transparent; overflow: hidden; font-family: sans-serif; }
     
-    .header { 
-      background: #001a33; color: #ffcc00; text-align: center; 
-      padding: 10px; font-weight: bold; font-size: 18px; 
-      border-bottom: 2px solid #ffcc00; margin-bottom: 10px;
+    .header-container {
+      background: #001a33; 
+      color: #ffcc00; 
+      text-align: center; 
+      padding: 12px 0;
+      border-bottom: 3px solid #ffcc00;
+      margin-bottom: 15px;
     }
 
-    .swiper { width: 100%; height: 380px; }
+    .title { font-weight: bold; font-size: 18px; text-transform: uppercase; margin: 0; }
+    
+    .drag-instruction { 
+      font-size: 14px; 
+      color: #ffffff; 
+      margin-top: 6px;
+      letter-spacing: 2px;
+      font-weight: bold; 
+      display: block;
+      text-align: center;
+      animation: pulse 2s infinite; 
+    }
+
+    @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
+    .swiper { width: 100%; height: 420px; }
     .swiper-slide { display: flex; justify-content: center; align-items: center; width: auto; }
 
-    .card { position: relative; display: block; text-decoration: none; cursor: pointer; }
-
-    img, video {
-      height: 340px; width: auto; border-radius: 12px;
-      box-shadow: 0 6px 15px rgba(0,0,0,0.6); display: block;
+    .card { 
+      position: relative; 
+      border-radius: 15px; 
+      overflow: hidden; 
+      background: #000; 
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+      border: 1px solid #333;
+      display: block;
+      text-decoration: none;
     }
 
-    video { background: #000; min-width: 250px; }
+    img, video { height: 370px; width: auto; display: block; object-fit: contain; }
 
-    .link-indicator {
-      position: absolute; bottom: 20px; right: 20px;
-      background: #ffcc00; color: #001a33; padding: 8px 12px; 
-      border-radius: 8px; font-size: 11px; font-weight: bold;
+    .link-indicator { 
+      position: absolute; 
+      bottom: 20px; 
+      right: 15px; 
+      background: #ffcc00; 
+      color: #001a33; 
+      padding: 10px 18px; 
+      border-radius: 10px; 
+      font-size: 14px; 
+      font-weight: 900; 
+      z-index: 10;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+      text-transform: uppercase;
     }
   </style>
 </head>
 <body>
 
-  <div class="header">MURAL DA SEMANA</div>
+  <div class="header-container">
+    <div class="title">Mural da Semana</div>
+    <div class="drag-instruction">&lt; ARRASTE PARA VER MAIS &gt;</div>
+  </div>
 
   <div class="swiper">
-    <div class="swiper-wrapper" id="listaMural">
-       </div>
+    <div class="swiper-wrapper" id="track">
+       <p style="color:white; text-align:center; width:100%;">Carregando...</p>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   <script>
-    // Link do seu Google Script (que já testamos e está enviando os dados)
-    const urlScript = 'https://script.google.com/macros/s/AKfycbysy1A5r5Qr-kxIqPfNLabVKA6ojJHSYcn6ZnZUR6LwxwPMnmaQGAO7VZzAKkarIP_J3A/exec';
+    // SEU NOVO LINK DO SCRIPT (JÁ CONFIGURADO)
+    const urlScript = 'https://script.google.com/macros/s/AKfycbxGq4FPn7DkbnlEA3fHXlng5RvFkJSWmR04dq-WlSxAGMeSKfzYID1od30bzTBZ0ThxFA/exec';
 
-    async function carregarDados() {
+    async function carregarMural() {
       try {
-        const res = await fetch(urlScript);
-        const dados = await res.json();
-        const container = document.getElementById("listaMural");
-        container.innerHTML = "";
+        const resposta = await fetch(urlScript);
+        const dados = await resposta.json();
+        const track = document.getElementById("track");
+        
+        if (!dados || dados.length === 0) {
+          track.innerHTML = "<p style='color:white; text-align:center; width:100%;'>Nenhum item ativo.</p>";
+          return;
+        }
 
-        dados.forEach(item => {
-          const slide = document.createElement("div");
-          slide.className = "swiper-slide";
+        track.innerHTML = dados.map(item => {
+          const midiaUrl = item.arquivo || "";
+          const isVideo = /\.(mp4|webm|mov)$/i.test(midiaUrl);
           
-          let midiaHtml = "";
-          const linkDaFotoOuVideo = item.foto || "";
-          
-          // Se o link termina em .mp4, cria um player de vídeo
-          if (linkDaFotoOuVideo.toLowerCase().includes(".mp4")) {
-            midiaHtml = `<video controls playsinline preload="metadata">
-                           <source src="${linkDaFotoOuVideo}" type="video/mp4">
-                         </video>`;
-          } else {
-            // Caso contrário, cria uma imagem normal
-            midiaHtml = `<img src="${linkDaFotoOuVideo}" alt="Mural">`;
-          }
+          const midiaHtml = isVideo 
+            ? `<video src="${midiaUrl}" controls playsinline preload="metadata"></video>`
+            : `<img src="${midiaUrl}" alt="Mural">`;
 
           const temLink = item.link && item.link.length > 5;
-          const indicator = temLink ? `<div class="link-indicator">🔗 Abrir Link</div>` : "";
 
-          slide.innerHTML = temLink 
-            ? `<a href="${item.link}" target="_top" class="card">${midiaHtml}${indicator}</a>`
-            : `<div class="card">${midiaHtml}</div>`;
-          
-          container.appendChild(slide);
-        });
+          return `
+            <div class="swiper-slide">
+              <a href="${temLink ? item.link : 'javascript:void(0)'}" target="_top" class="card">
+                ${midiaHtml}
+                ${temLink ? `<div class="link-indicator">🔗 VER MAIS</div>` : ''}
+              </a>
+            </div>`;
+        }).join('');
 
-        // Inicializa o carrossel depois que os itens foram carregados
         new Swiper('.swiper', {
           slidesPerView: 'auto',
-          spaceBetween: 20,
+          spaceBetween: 25,
           centeredSlides: true,
           loop: dados.length > 1,
-          autoplay: { delay: 5000, disableOnInteraction: true }
+          grabCursor: true
         });
 
       } catch (e) {
-        console.error("Erro ao carregar:", e);
+        console.error("Erro:", e);
+        document.getElementById("track").innerHTML = "<p style='color:white;'>Erro ao carregar dados.</p>";
       }
     }
 
-    carregarDados();
+    carregarMural();
   </script>
 </body>
 </html>
