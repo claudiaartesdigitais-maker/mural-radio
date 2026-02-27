@@ -12,22 +12,18 @@
       overflow-x: hidden;
     }
 
-    /* Banner "Semana" */
+    /* Banner "Semana" (Puxado da Coluna E) */
     #banner-capa { 
       width: 100%; display: none; 
-      padding: 20px 0; 
+      padding: 15px 0 5px 0; 
       text-align: center;
     }
-    #banner-capa img { width: 90%; max-width: 600px; height: auto; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+    #banner-capa img { width: 92%; max-width: 600px; height: auto; border-radius: 10px; }
 
-    .header { background: #001a33; color: #ffcc00; text-align: center; padding: 12px; border-bottom: 3px solid #ffcc00; }
-    .title { font-weight: bold; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
-    
-    /* Swiper */
-    .swiper { width: 100%; height: 420px; margin-top: 15px; background: #001a33; }
+    /* Swiper - Carrossel do Mural */
+    .swiper { width: 100%; height: 440px; margin-top: 5px; background: #001a33; }
     .swiper-slide { display: flex; justify-content: center; align-items: center; width: auto; }
     
-    /* Card do Mural */
     .card { 
       width: 290px; 
       height: 380px; 
@@ -53,20 +49,17 @@
       text-decoration: none; 
       font-size: 13px; 
       z-index: 10; 
-      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
     }
 
     @media (max-width: 600px) {
-      .swiper { height: 380px; }
-      .card { width: 260px; height: 340px; }
+      .swiper { height: 390px; }
+      .card { width: 265px; height: 350px; }
     }
   </style>
 </head>
 <body>
 
   <div id="banner-capa"></div>
-
-  <div class="header"><div class="title">Mural da Comunidade</div></div>
   
   <div class="swiper">
     <div class="swiper-wrapper" id="track"></div>
@@ -74,37 +67,32 @@
 
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   <script>
-    // Link da planilha do Mural
-    const linkDaPlanilha = "https://script.google.com/macros/s/AKfycbxtWap7_DNttvDVHAxkf5rn_pn7a6zOcqBRKY_GgCzBoJa2iAbMl_ks6a2lcYsJHjwnLQ/exec";
+    // Link NOVO da sua implantação
+    const linkDaPlanilha = "https://script.google.com/macros/s/AKfycbxBDmfYsPqnJVhkwty3JoyKB_Al8xPHrk5yHsyuZFki2qkH9CJV3qCcMlvnwo-wYD0H4Q/exec";
 
     async function carregar() {
       try {
         const res = await fetch(linkDaPlanilha);
         const dados = await res.json();
-        
         if (!dados || dados.length === 0) return;
 
-        // Lógica da Capa (Busca na primeira linha da planilha)
-        const itemCapa = dados.find(i => i.capa && i.capa.length > 10);
-        if (itemCapa) {
+        // Puxa a capa da coluna E enviada pelo novo Script.gs
+        if (dados[0].capa && dados[0].capa.length > 5) {
             const b = document.getElementById("banner-capa");
-            b.innerHTML = `<img src="${itemCapa.capa}">`;
+            b.innerHTML = `<img src="${dados[0].capa}">`;
             b.style.display = "block";
         }
 
         const container = document.getElementById("track");
         container.innerHTML = dados.map(item => {
           if(!item.arquivo) return '';
-          
           const isVideo = /\.(mp4|webm|mov)$/i.test(item.arquivo);
-          const midia = isVideo 
-            ? `<video src="${item.arquivo}" autoplay muted loop playsinline></video>` 
-            : `<img src="${item.arquivo}" loading="lazy">`;
-          
           return `
             <div class="swiper-slide">
               <div class="card">
-                ${midia}
+                ${isVideo 
+                  ? `<video src="${item.arquivo}" autoplay muted loop playsinline></video>` 
+                  : `<img src="${item.arquivo}" loading="lazy">`}
                 ${item.link && item.link.length > 5 ? `<a href="${item.link}" target="_blank" class="btn-link">VER MAIS</a>` : ''}
               </div>
             </div>`;
@@ -117,9 +105,7 @@
           loop: dados.length > 1,
           grabCursor: true
         });
-      } catch (e) { 
-        console.error("Erro no Mural:", e); 
-      }
+      } catch (e) { console.error("Erro ao carregar Mural:", e); }
     }
     carregar();
   </script>
