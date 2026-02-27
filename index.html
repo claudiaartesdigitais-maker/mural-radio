@@ -7,36 +7,40 @@
   <style>
     body, html { 
       margin: 0; padding: 0; 
-      background: #001a33; 
+      background: #ffffff; /* FUNDO TOTALMENTE BRANCO */
       font-family: 'Segoe UI', Roboto, sans-serif; 
       overflow-x: hidden;
+      color: #001a33; /* Texto padrão em azul escuro se houver */
     }
 
-    /* Banner "Semana" (Puxado da Coluna E) */
+    /* Banner "Semana" */
     #banner-capa { 
       width: 100%; display: none; 
       padding: 15px 0 5px 0; 
       text-align: center;
+      background: #ffffff; /* Fundo do banner branco */
     }
-    #banner-capa img { width: 92%; max-width: 600px; height: auto; border-radius: 10px; }
+    #banner-capa img { width: 92%; max-width: 600px; height: auto; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
     /* Swiper - Carrossel do Mural */
-    .swiper { width: 100%; height: 440px; margin-top: 5px; background: #001a33; }
+    .swiper { width: 100%; height: 440px; margin-top: 5px; background: #ffffff; }
     .swiper-slide { display: flex; justify-content: center; align-items: center; width: auto; }
     
+    /* Card do Mural (Fundo do Card continua Preto para as Artes) */
     .card { 
       width: 290px; 
       height: 380px; 
       background: #000; 
       border-radius: 15px; 
       overflow: hidden; 
-      border: 1px solid #333; 
+      border: 1px solid #ddd; /* Borda mais suave no branco */
       position: relative; 
-      box-shadow: 0 6px 15px rgba(0,0,0,0.6);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.2); /* Sombra mais leve */
     }
     
     img, video { width: 100%; height: 100%; object-fit: cover; }
     
+    /* Botão "VER MAIS" Amarelo Ouro */
     .btn-link { 
       position: absolute; 
       bottom: 15px; 
@@ -49,6 +53,7 @@
       text-decoration: none; 
       font-size: 13px; 
       z-index: 10; 
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
 
     @media (max-width: 600px) {
@@ -76,7 +81,7 @@
         const dados = await res.json();
         if (!dados || dados.length === 0) return;
 
-        // Puxa a capa da coluna E enviada pelo novo Script.gs
+        // Carrega a Capa (Coluna E)
         if (dados[0].capa && dados[0].capa.length > 5) {
             const b = document.getElementById("banner-capa");
             b.innerHTML = `<img src="${dados[0].capa}">`;
@@ -91,7 +96,7 @@
             <div class="swiper-slide">
               <div class="card">
                 ${isVideo 
-                  ? `<video src="${item.arquivo}" autoplay muted loop playsinline></video>` 
+                  ? `<video src="${item.arquivo}" controls playsinline></video>` 
                   : `<img src="${item.arquivo}" loading="lazy">`}
                 ${item.link && item.link.length > 5 ? `<a href="${item.link}" target="_blank" class="btn-link">VER MAIS</a>` : ''}
               </div>
