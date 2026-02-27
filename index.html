@@ -2,74 +2,107 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   <style>
-    body, html { margin: 0; padding: 0; background: transparent; font-family: sans-serif; overflow: hidden; }
-    .header { background: #001a33; color: #ffcc00; text-align: center; padding: 10px; border-bottom: 3px solid #ffcc00; }
-    .title { font-weight: bold; font-size: 16px; text-transform: uppercase; }
+    body, html { 
+      margin: 0; padding: 0; 
+      background: #001a33; /* Fundo azul padrão */
+      font-family: 'Segoe UI', Roboto, sans-serif; 
+      overflow-x: hidden;
+    }
+
+    /* Banner "Semana" (Capa) */
+    #banner-capa { 
+      width: 100%; display: none; 
+      padding-top: 15px; 
+      padding-bottom: 20px; 
+      text-align: center;
+    }
+    #banner-capa img { width: 90%; max-width: 600px; height: auto; border-radius: 10px; }
+
+    .header { background: #001a33; color: #ffcc00; text-align: center; padding: 12px; border-bottom: 3px solid #ffcc00; }
+    .title { font-weight: bold; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
     
-    /* Altura ajustada para o SmallBio */
-    .swiper { width: 100%; height: 385px; margin-top: 5px; }
+    /* Swiper Ajustado */
+    .swiper { width: 100%; height: 420px; margin-top: 15px; background: #001a33; }
     .swiper-slide { display: flex; justify-content: center; align-items: center; width: auto; }
     
-    /* Card com largura boa para preencher a tela */
+    /* Card do Mural */
     .card { 
       width: 290px; 
-      height: 350px; 
+      height: 380px; 
       background: #000; 
-      border-radius: 12px; 
+      border-radius: 15px; 
       overflow: hidden; 
       border: 1px solid #333; 
       position: relative; 
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.6);
     }
     
     img, video { width: 100%; height: 100%; object-fit: cover; }
     
     .btn-link { 
       position: absolute; 
-      bottom: 12px; 
-      right: 12px; 
+      bottom: 15px; 
+      right: 15px; 
       background: #ffcc00; 
       color: #001a33; 
-      padding: 10px 16px; /* Botão um pouco maior para facilitar o clique */
+      padding: 10px 18px; 
       border-radius: 8px; 
-      font-weight: bold; 
+      font-weight: 900; 
       text-decoration: none; 
-      font-size: 12px; 
+      font-size: 13px; 
       z-index: 10; 
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+
+    @media (max-width: 600px) {
+      .swiper { height: 380px; }
+      .card { width: 260px; height: 340px; }
     }
   </style>
 </head>
 <body>
+  <div id="banner-capa"></div>
+
   <div class="header"><div class="title">Mural da Comunidade</div></div>
-  <div class="swiper"><div class="swiper-wrapper" id="track"></div></div>
+  
+  <div class="swiper">
+    <div class="swiper-wrapper" id="track"></div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   <script>
-    const linkDaPlanilha = "https://script.google.com/macros/s/AKfycbxdgXRUsVRZWk_IkQeTua6h3pdZ08P4nFTD6GHj_wHv3xKhJpuqCE1E1rEG26XRM1p4fA/exec";
+    // Link da nova planilha que você passou
+    const linkDaPlanilha = "https://script.google.com/macros/s/AKfycbxtWap7_DNttvDVHAxkf5rn_pn7a6zOcqBRKY_GgCzBoJa2iAbMl_ks6a2lcYsJHjwnLQ/exec";
 
     async function carregar() {
       try {
         const res = await fetch(linkDaPlanilha);
         const dados = await res.json();
-        const container = document.getElementById("track");
-
         if (!dados || dados.length === 0) return;
 
+        // Carregar a Capa (coluna E / campo 'capa')
+        if (dados[0].capa && dados[0].capa.includes("http")) {
+            const b = document.getElementById("banner-capa");
+            b.innerHTML = `<img src="${dados[0].capa}">`;
+            b.style.display = "block";
+        }
+
+        const container = document.getElementById("track");
         container.innerHTML = dados.map(item => {
-          const isVideo = item.arquivo.includes('.mp4');
+          if(!item.arquivo) return '';
+          const isVideo = /\.(mp4|webm|mov)$/i.test(item.arquivo);
           const midia = isVideo 
-            ? `<video src="${item.arquivo}" autoplay muted loop playsinline controls></video>` 
+            ? `<video src="${item.arquivo}" autoplay muted loop playsinline></video>` 
             : `<img src="${item.arquivo}" loading="lazy">`;
           
           return `
             <div class="swiper-slide">
               <div class="card">
                 ${midia}
-                ${item.link ? `<a href="${item.link}" target="_blank" class="btn-link">VER MAIS</a>` : ''}
+                ${item.link && item.link.length > 5 ? `<a href="${item.link}" target="_blank" class="btn-link">VER MAIS</a>` : ''}
               </div>
             </div>`;
         }).join('');
@@ -77,12 +110,11 @@
         new Swiper('.swiper', { 
           slidesPerView: 'auto', 
           centeredSlides: true, 
-          spaceBetween: 25, // Espaço de segurança para não clicar na arte vizinha
+          spaceBetween: 25, 
           loop: dados.length > 1,
-          resistanceRatio: 0,
-          touchAngle: 45
+          grabCursor: true
         });
-      } catch (e) { console.error("Erro:", e); }
+      } catch (e) { console.error("Erro no Mural:", e); }
     }
     carregar();
   </script>
