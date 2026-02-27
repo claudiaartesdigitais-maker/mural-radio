@@ -7,24 +7,23 @@
   <style>
     body, html { 
       margin: 0; padding: 0; 
-      background: #001a33; /* Fundo azul padrão */
+      background: #001a33; 
       font-family: 'Segoe UI', Roboto, sans-serif; 
       overflow-x: hidden;
     }
 
-    /* Banner "Semana" (Capa) */
+    /* Banner "Semana" */
     #banner-capa { 
       width: 100%; display: none; 
-      padding-top: 15px; 
-      padding-bottom: 20px; 
+      padding: 20px 0; 
       text-align: center;
     }
-    #banner-capa img { width: 90%; max-width: 600px; height: auto; border-radius: 10px; }
+    #banner-capa img { width: 90%; max-width: 600px; height: auto; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
 
     .header { background: #001a33; color: #ffcc00; text-align: center; padding: 12px; border-bottom: 3px solid #ffcc00; }
     .title { font-weight: bold; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
     
-    /* Swiper Ajustado */
+    /* Swiper */
     .swiper { width: 100%; height: 420px; margin-top: 15px; background: #001a33; }
     .swiper-slide { display: flex; justify-content: center; align-items: center; width: auto; }
     
@@ -64,6 +63,7 @@
   </style>
 </head>
 <body>
+
   <div id="banner-capa"></div>
 
   <div class="header"><div class="title">Mural da Comunidade</div></div>
@@ -74,25 +74,28 @@
 
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   <script>
-    // Link da nova planilha que você passou
+    // Link da planilha do Mural
     const linkDaPlanilha = "https://script.google.com/macros/s/AKfycbxtWap7_DNttvDVHAxkf5rn_pn7a6zOcqBRKY_GgCzBoJa2iAbMl_ks6a2lcYsJHjwnLQ/exec";
 
     async function carregar() {
       try {
         const res = await fetch(linkDaPlanilha);
         const dados = await res.json();
+        
         if (!dados || dados.length === 0) return;
 
-        // Carregar a Capa (coluna E / campo 'capa')
-        if (dados[0].capa && dados[0].capa.includes("http")) {
+        // Lógica da Capa (Busca na primeira linha da planilha)
+        const itemCapa = dados.find(i => i.capa && i.capa.length > 10);
+        if (itemCapa) {
             const b = document.getElementById("banner-capa");
-            b.innerHTML = `<img src="${dados[0].capa}">`;
+            b.innerHTML = `<img src="${itemCapa.capa}">`;
             b.style.display = "block";
         }
 
         const container = document.getElementById("track");
         container.innerHTML = dados.map(item => {
           if(!item.arquivo) return '';
+          
           const isVideo = /\.(mp4|webm|mov)$/i.test(item.arquivo);
           const midia = isVideo 
             ? `<video src="${item.arquivo}" autoplay muted loop playsinline></video>` 
@@ -110,11 +113,13 @@
         new Swiper('.swiper', { 
           slidesPerView: 'auto', 
           centeredSlides: true, 
-          spaceBetween: 25, 
+          spaceBetween: 20, 
           loop: dados.length > 1,
           grabCursor: true
         });
-      } catch (e) { console.error("Erro no Mural:", e); }
+      } catch (e) { 
+        console.error("Erro no Mural:", e); 
+      }
     }
     carregar();
   </script>
